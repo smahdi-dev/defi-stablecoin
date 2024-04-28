@@ -31,6 +31,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__TransferFailed();
     error DSCEngine__BreaksHealthFactor(uint256 userHealthFactor);
     error DSCEngine__MintFailed();
+    error DSCEngine__HealthFactorOk();
 
     // state variables
     uint256 private constant LIQUIDATION_THRESHOLD = 50; // 200% overcollateralized
@@ -171,7 +172,21 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsBroken(msg.sender); // I don't think this would ever hit...
     }
 
-    function liquidate() external {}
+    // $100 ETH -> 50 DSC = ok
+    // $90  ETH -> 50 DSC = bad
+    // first check if health factor is OK or not. if it is OK, then we revert the function.
+    // caller burns an amount of DSC
+    // pay the caller the equivalent of the burned DSC from collateral type + 10% bonus
+    function liquidate(address collateral, address user, uint256 detbToCover) external {
+        uint256 userHealthFactor = _healthFactor(user);
+        if (userHealthFactor > MIN_HEALTH_FACTOR) {
+            revert DSCEngine__HealthFactorOk();
+        }
+
+        burnDSC(detbToCover);
+
+        uint256 amountCollateralToPay = calculateEquivalentCollateralwithBonus(collateral, detbToCover);
+    }
 
     function getHealthFactor() external view {}
 
@@ -220,5 +235,14 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION;
+    }
+
+    function calculateEquivalentCollateralwithBonus(address collateral, uint256 detbToCover)
+        public
+        view
+        returns (uint256)
+    {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[collateral]);
+        (, int256 price,,,) = priceFeed.latestRoundData();
     }
 }
