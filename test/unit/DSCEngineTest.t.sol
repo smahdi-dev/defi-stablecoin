@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {DeployDSC} from "../../script/DeployDSC.s.sol";
 import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {DSCEngine} from "../../src/DSCEngine.sol";
@@ -29,9 +29,9 @@ contract DSCEngineTest is Test {
         ERC20Mock(weth).mint(USER, STARTING_ERC20_BALANCE);
     }
 
+    // constructor tests
     address[] public tokenAddresses;
     address[] public priceFeedAddresses;
-    // constructor tests
 
     function testRevertsIfTokenLengthDoesntMatchPriceFeed() public {
         tokenAddresses.push(weth);
@@ -49,6 +49,15 @@ contract DSCEngineTest is Test {
         uint256 expectedUsd = 30000e18;
         uint256 actualUsd = engine.getUsdValue(weth, ethAmount);
         assertEq(expectedUsd, actualUsd);
+    }
+
+    function testGetTokenAmountFromUsd() public view {
+        uint256 usdAmount = 100 ether;
+        uint256 expectedWeth = 0.05 ether;
+
+        uint256 actualWeth = engine.getTokenAmountFromUsd(weth, usdAmount);
+
+        assertEq(expectedWeth, actualWeth);
     }
 
     // deposit collateral tests
