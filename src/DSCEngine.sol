@@ -33,6 +33,8 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__MintFailed();
     error DSCEngine__HealthFactorOk();
     error DSCEngine__HealthFactorNotImproved();
+    error DSCEngine__TokenAddressesAndPriceFeedAddressesMustNotBeEmpty();
+    error DSCEngine__ZeroAddress();
 
     // state variables
     uint256 private constant LIQUIDATION_THRESHOLD = 50; // 200% overcollateralized
@@ -70,6 +72,12 @@ contract DSCEngine is ReentrancyGuard {
     constructor(address[] memory tokenAddresses, address[] memory priceFeedAddresses, address dscAddress) {
         if (tokenAddresses.length != priceFeedAddresses.length) {
             revert DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength();
+        }
+        if (tokenAddresses.length == 0 || priceFeedAddresses.length == 0) {
+            revert DSCEngine__TokenAddressesAndPriceFeedAddressesMustNotBeEmpty();
+        }
+        if (dscAddress == address(0)) {
+            revert DSCEngine__ZeroAddress();
         }
 
         for (uint256 i = 0; i < tokenAddresses.length; i++) {

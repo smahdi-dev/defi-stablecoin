@@ -42,6 +42,19 @@ contract DSCEngineTest is Test {
         new DSCEngine(tokenAddresses, priceFeedAddresses, address(dsc));
     }
 
+    function testConstructorRevertsWithEmptyInputArrays() public {
+        vm.expectRevert(DSCEngine.DSCEngine__TokenAddressesAndPriceFeedAddressesMustNotBeEmpty.selector);
+        new DSCEngine(tokenAddresses, priceFeedAddresses, address(dsc));
+    }
+
+    function testConstructorRevertsWithZeroAddressAsInputForDsc() public {
+        tokenAddresses.push(weth);
+        priceFeedAddresses.push(ethUsdPriceFeed);
+
+        vm.expectRevert(DSCEngine.DSCEngine__ZeroAddress.selector);
+        new DSCEngine(tokenAddresses, priceFeedAddresses, address(0));
+    }
+
     // price tests
     function testGetUsdValue() public view {
         uint256 ethAmount = 15e18;
@@ -96,4 +109,6 @@ contract DSCEngineTest is Test {
         assertEq(expectedTotalDscMinted, totalDscMinted);
         assertEq(AMOUNT_COLLATERAL, expectedDepositAmount);
     }
+
+    // redeem collateral
 }
