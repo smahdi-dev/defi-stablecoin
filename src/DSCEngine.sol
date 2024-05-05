@@ -35,6 +35,8 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__HealthFactorNotImproved();
     error DSCEngine__TokenAddressesAndPriceFeedAddressesMustNotBeEmpty();
     error DSCEngine__ZeroAddress();
+    error DSCEngine__NoDscMinted();
+    error DSCEngine__NoCollateralDeposited();
 
     // state variables
     uint256 private constant LIQUIDATION_THRESHOLD = 50; // 200% overcollateralized
@@ -205,7 +207,9 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsBroken(msg.sender);
     }
 
-    function getHealthFactor() external view {}
+    function getHealthFactor(address user) external view returns (uint256 healthFactor) {
+        healthFactor = _healthFactor(user);
+    }
 
     // internal & private functions
     /**
@@ -251,6 +255,12 @@ contract DSCEngine is ReentrancyGuard {
         // total DSC minted
         // total collateral value
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = _getAccountInformation(user);
+        if (collateralValueInUsd == 0) {
+            revert DSCEngine__NoCollateralDeposited();
+        }
+        if (totalDscMinted == 0) {
+            revert DSCEngine__NoDscMinted();
+        }
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }

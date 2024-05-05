@@ -111,4 +111,27 @@ contract DSCEngineTest is Test {
     }
 
     // redeem collateral
+    function testRedeemRevertsWithUnapprovedCollateral() public {
+        ERC20Mock ranToken = new ERC20Mock("RAN", "RAN", USER, AMOUNT_COLLATERAL);
+
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__NotAllowedToken.selector);
+        engine.redeemCollateral(address(ranToken), AMOUNT_COLLATERAL);
+        vm.stopPrank();
+    }
+
+    function testRedeemRevertsIfAmountIsZero() public {
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
+        engine.redeemCollateral(weth, 0);
+        vm.stopPrank();
+    }
+
+    function testRedeemRevertsIfUserDoesntHaveCollateral() public {
+        vm.startPrank(USER);
+
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__NoDscMinted.selector));
+        engine.redeemCollateral(weth, 1 ether);
+        vm.stopPrank();
+    }
 }
