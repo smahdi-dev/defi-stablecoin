@@ -110,7 +110,7 @@ contract DSCEngineTest is Test {
         assertEq(AMOUNT_COLLATERAL, expectedDepositAmount);
     }
 
-    // redeem collateral
+    // redeem collateral (needs more tests ...)
     function testRedeemRevertsWithUnapprovedCollateral() public {
         ERC20Mock ranToken = new ERC20Mock("RAN", "RAN", USER, AMOUNT_COLLATERAL);
 
@@ -126,4 +126,20 @@ contract DSCEngineTest is Test {
         engine.redeemCollateral(weth, 0);
         vm.stopPrank();
     }
+
+    // Health Factor (needs more tests ...)
+    // fixed bug: there was a bug in _healthFactor that we didn't check if user's collateral or dsc minted are zero
+    function testHealthFactorRevertsWithNoCollateral() public {
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__NoCollateralDeposited.selector);
+        engine.getHealthFactor(USER);
+        vm.stopPrank();
+    }
+
+    function testHealthFactorRevertsWithNoDscMinted() public depositedCollateral {
+        vm.expectRevert(DSCEngine.DSCEngine__NoDscMinted.selector);
+        engine.getHealthFactor(USER);
+    }
+
+    // mint DSC
 }
