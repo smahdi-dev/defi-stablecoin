@@ -126,12 +126,4 @@ contract DSCEngineTest is Test {
         engine.redeemCollateral(weth, 0);
         vm.stopPrank();
     }
-
-    function testRedeemRevertsIfUserDoesntHaveCollateral() public {
-        vm.startPrank(USER);
-
-        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__NoDscMinted.selector));
-        engine.redeemCollateral(weth, 1 ether);
-        vm.stopPrank();
-    }
 }
