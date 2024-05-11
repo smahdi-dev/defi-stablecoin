@@ -142,4 +142,23 @@ contract DSCEngineTest is Test {
     }
 
     // mint DSC
+    function testMintRevertsIfAmountIsZero() public {
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
+        engine.mintDSC(0);
+        vm.stopPrank();
+    }
+
+    function testMintRevertsIfCollateralIsZero() public {
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__NoCollateralDeposited.selector);
+        engine.mintDSC(1);
+        vm.stopPrank();
+    }
+
+    function testMintRevertsIfHealthFactorIsBroken() public {
+        vm.startPrank(USER);
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__BreaksHealthFactor, ));
+        vm.stopPrank();
+    }
 }
