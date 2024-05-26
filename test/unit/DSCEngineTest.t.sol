@@ -156,9 +156,10 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
-    function testMintRevertsIfHealthFactorIsBroken() public {
+    function testMintRevertsIfHealthFactorIsBroken() public depositedCollateral {
         vm.startPrank(USER);
-        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__BreaksHealthFactor, ));
+        vm.expectRevert();
+        engine.mintDSC(10 ether);
         vm.stopPrank();
     }
 }
