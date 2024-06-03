@@ -262,7 +262,7 @@ contract DSCEngine is ReentrancyGuard {
             revert DSCEngine__NoDscMinted();
         }
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
-        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
+        return collateralAdjustedForThreshold / totalDscMinted;
     }
 
     // 1. check heath factor (do they have enough collateral?)
