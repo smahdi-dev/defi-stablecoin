@@ -127,6 +127,14 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
+    function testRedeemAllCollateral() public depositedCollateral {
+        vm.startPrank(USER);
+        engine.redeemCollateral(weth, AMOUNT_COLLATERAL);
+        uint256 userBalance = ERC20Mock(weth).balanceOf(USER);
+        vm.assertEq(userBalance, AMOUNT_COLLATERAL);
+        vm.stopPrank();
+    }
+
     // Health Factor (needs more tests ...)
     // fixed bug: there was a bug in _healthFactor that we didn't check if user's collateral or dsc minted are zero
     function testHealthFactorRevertsWithNoCollateral() public {
